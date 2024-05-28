@@ -1,0 +1,60 @@
+################################################################################
+# Filename: docker-compose.yml
+# Purpose : Define the orchestration of services for the web application
+# Author  : Benjamin Goh
+
+# Description:
+# This Docker Compose file orchestrates a web application setup that includes
+# an Nginx reverse proxy, frontend, backend, and a database service. It specifies
+# the build context, dependencies, and configurations necessary for each service
+# to function correctly in a unified environment.
+
+# Usage:
+# To start the services, ensure Docker is installed and run the following command
+# in the directory containing this file:
+#   docker-compose up --build
+#
+# This will build the images if they don't exist and start the services. The Nginx
+# service is set up to listen on port 8765, routing traffic to the frontend and
+# backend services as configured.
+
+# Notes:
+# - Ensure that the Dockerfile exists in each service directory specified in the
+#   build paths (./nginx, ./client, ./server, ./database).
+# - The 'db' service uses environment variables to configure the MySQL database.
+# - Persistent volume 'db_data' is used to maintain database data across container
+#   restarts.
+# - The services are linked with 'depends_on', ensuring that they start in the
+#   correct order. However, this does not wait for a service to be "ready" before
+#   starting the next one, which should be managed internally in the services.
+
+################################################################################
+
+version: "3.8"
+
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - "8080:80"
+    depends_on:
+      - frontend
+      - backend
+      - db
+
+  frontend:
+    build: ./client
+
+  backend:
+    build: ./server
+
+  db:
+    build: ./database
+    environment:
+      MYSQL_ROOT_PASSWORD: my_root_password
+      MYSQL_DATABASE: mp_database
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  db_data:

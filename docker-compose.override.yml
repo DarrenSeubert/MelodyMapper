@@ -1,0 +1,63 @@
+################################################################################
+# Filename: docker-compose.override.yml
+# Purpose : Customize Docker Compose behavior for local development environments
+# Author  : Benjamin Goh
+
+# Description:
+# This Docker Compose override file is designed to enhance or modify the configuration
+# defined in `docker-compose.yml` for development purposes. It specifies alternative
+# ports, mounts local volumes for live code reloading, and sets environment variables
+# that are suitable for a development setting.
+
+# Usage:
+# This file should be placed in the same directory as your main `docker-compose.yml`.
+# Docker Compose automatically applies configurations from `docker-compose.override.yml`
+# when running commands. To use the services with overridden configurations, simply run:
+#   docker-compose up
+#
+# Docker Compose will merge this override file with the base configuration.
+
+# Notes:
+# - The override sets the front-end service to expose port 3000 and mounts local directories
+#   to enable hot-reloading of code.
+# - The backend service is configured with development-specific environment variables and
+#   also exposes port 5000 for direct access.
+# - `dbPhpMyAdmin` service provides a PHPMyAdmin interface accessible via port 8080 for
+#   database management.
+# - Ensure that any paths specified for volumes correctly point to your local development
+#   directories.
+# - The `node_modules` volume is defined to prevent node_modules in your local directory
+#   from being overshadowed by the container's node_modules, which can be crucial for
+#   platforms where node_modules binaries are dependent on the system architecture
+#   (e.g., MacOS vs. Linux).
+
+################################################################################
+
+version: "3.8"
+services:
+  frontend:
+    volumes:
+      - ./client:/app
+      - node_modules:/app/node_modules
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_URL=http://localhost:8080
+
+  backend:
+    # volumes:
+    #   - ./server:/app
+    environment:
+      - APP_ENV=development
+      - DATABASE_URL=mysql+mysqlconnector://root:my_root_password@db/mp_database
+
+  dbPhpMyAdmin:
+    image: phpmyadmin/phpmyadmin:latest
+    environment:
+      PMA_HOST: db
+      PMA_USER: root
+      PMA_PASSWORD: my_root_password
+    ports:
+      - "8765:80"
+
+volumes:
+  node_modules:

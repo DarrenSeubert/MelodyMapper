@@ -1,0 +1,98 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ConversionHistory component matches snapshot 1`] = `
+<div
+  className="conversion-history-container"
+>
+  <div
+    id="conversion-history"
+  >
+    <h2
+      id="conversion-history-heading"
+    >
+      Conversion History
+    </h2>
+    <input
+      onChange={[Function]}
+      placeholder="Search by file, author, email, or date..."
+      type="text"
+      value=""
+    />
+    <table
+      id="conversion-history-table"
+    >
+      <thead>
+        <tr>
+          <th
+            className="sortable"
+            onClick={[Function]}
+          >
+            File
+             ▲
+          </th>
+          <th
+            className="sortable"
+            onClick={[Function]}
+          >
+            Author
+          </th>
+          <th
+            className="sortable"
+            onClick={[Function]}
+          >
+            Email
+          </th>
+          <th
+            className="sortable"
+            onClick={[Function]}
+          >
+            Date
+          </th>
+          <th>
+            Download
+          </th>
+        </tr>
+      </thead>
+      <tbody />
+    </table>
+    <ul
+      aria-label="Pagination"
+      className="pagination"
+      role="navigation"
+    >
+      <li
+        className="previous pagination__link--disabled"
+      >
+        <a
+          aria-disabled="true"
+          aria-label="Previous page"
+          className="pagination__link "
+          onClick={[Function]}
+          onKeyPress={[Function]}
+          rel="prev"
+          role="button"
+          tabIndex="-1"
+        >
+          Previous
+        </a>
+      </li>
+      <li
+        className="next"
+      >
+        <a
+          aria-disabled="false"
+          aria-label="Next page"
+          className="pagination__link"
+          onClick={[Function]}
+          onKeyPress={[Function]}
+          rel="next"
+          role="button"
+          tabIndex="0"
+        >
+          Next
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
+`;

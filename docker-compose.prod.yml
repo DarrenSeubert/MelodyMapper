@@ -1,0 +1,71 @@
+################################################################################
+# Filename: docker-compose.prod.yml
+# Purpose : Define and manage the production environment for the application
+# Author  : Benjamin Goh
+
+# Description:
+# This Docker Compose file orchestrates the production environment for the application,
+# configuring services such as Nginx, frontend, backend, and the database to work
+# together optimally. This setup is intended for live deployment, ensuring that
+# all components are tuned for production settings.
+
+# Usage:
+# To deploy the application in a production environment, execute the following command
+# in the directory containing this file:
+#   docker-compose -f docker-compose.prod.yml up --build -d
+#
+# This command builds the images if necessary, starts up the services, and runs them
+# in the background.
+
+# Notes:
+# - Ensure that all environment variables, such as `NODE_ENV` and `DATABASE_URL`, are
+#   configured to reflect your production settings.
+# - The `nginx` service is configured to listen on port 8765 and serves as the reverse
+#   proxy for frontend and backend services.
+# - Persistent storage is managed for the database service with a Docker volume, which
+#   ensures data persistence across container restarts.
+# - It is recommended to secure your database and other services with proper network
+#   restrictions and security settings in production.
+# - Regular backups and monitoring are advisable for production environments to ensure
+#   data integrity and service availability.
+
+################################################################################
+
+version: "3.8"
+services:
+  nginx:
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+      - db
+
+  frontend:
+    build: ./client
+    depends_on:
+      - backend
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=http://cs506-team-05.cs.wisc.edu
+
+  backend:
+    build: ./server
+    depends_on:
+      - db
+    environment:
+      - APP_ENV=production
+      - DATABASE_URL=mysql+mysqlconnector://root:my_root_password@db/mp_database
+
+  db:
+    build: ./database
+    environment:
+      MYSQL_ROOT_PASSWORD: my_root_password
+      MYSQL_DATABASE: mp_database
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: unless-stopped
+
+volumes:
+  db_data:

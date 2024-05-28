@@ -1,0 +1,11 @@
+*.env
+.idea/
+.venv/
+.vscode/
+.pytest_cache
+__pycache__/
+htmlcov/
+docs/_build/
+dist/
+venv/
+connection_string.py

@@ -1,0 +1,96 @@
+.conversion-history-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#conversion-history-table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 0 auto;
+}
+
+#conversion-history-table th,
+#conversion-history-table td {
+  border: 2px solid black;
+  padding: 8px;
+}
+
+#conversion-history-table thead {
+  background-color: #f2f2f2;
+}
+
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  box-sizing: border-box;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+}
+
+#conversion-history-table th {
+  height: 50px;
+}
+
+.pagination {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+}
+
+.pagination li {
+  margin-top: 20px;
+}
+
+.pagination li a {
+  cursor: pointer;
+  border: 1px solid #ddd;
+  padding: 5px 10px;
+  text-decoration: none;
+  color: #333;
+  margin: 5px;
+}
+
+.pagination li a:hover,
+.pagination li a.active {
+  background-color: #eee;
+}
+
+.pagination__link--active a {
+  background-color: #007bff;
+  color: white;
+}
+
+.pagination__link--disabled a {
+  color: #ccc;
+}
+
+.pagination__link--disabled {
+  color: #ccc;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.pagination__link--disabled a {
+  border-color: #ccc;
+}
+
+.sortable:hover {
+  cursor: pointer;
+}
+
+#conversion-history-table td button {
+  padding: 5px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-right: 5px;
+  border-radius: 10px;
+}
+
+#conversion-history-table td button:hover {
+  background-color: #0056b3;
+}
