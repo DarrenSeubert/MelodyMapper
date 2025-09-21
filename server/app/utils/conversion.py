@@ -22,7 +22,6 @@
 #
 ###############################################################################
 
-import io
 import os
 import pydub
 import librosa
@@ -35,16 +34,29 @@ midi_folder = "./app/utils/midi_output"
 
 import subprocess
 
+
 def convert_webm_to_mp3(input_file, output_file):
     # command to convert the WEBM file to MP3
-    command = ['ffmpeg', '-i', input_file, '-vn', '-ab', '192k', '-ar', '44100', '-y', output_file]
-    
+    command = [
+        "ffmpeg",
+        "-i",
+        input_file,
+        "-vn",
+        "-ab",
+        "192k",
+        "-ar",
+        "44100",
+        "-y",
+        output_file,
+    ]
+
     # run the command through the subprocess module
     try:
-        result = subprocess.run(command, check=True)
+        subprocess.run(command, check=True)
         print("Conversion completed successfully.")
     except subprocess.CalledProcessError:
         print("An error occurred during conversion.")
+
 
 def audio_to_wav(audio_file):
     """
@@ -106,9 +118,11 @@ def divide_audio_data(audio_data, sample_rate, tempo):
         print("An error occurred during audio data division:", e)
         return None
 
+
 def is_webm_file(file_path):
     _, file_extension = os.path.splitext(file_path)
-    return file_extension.lower() == '.webm'
+    return file_extension.lower() == ".webm"
+
 
 def change_extension_to_mp3(file_path):
     """
@@ -122,14 +136,15 @@ def change_extension_to_mp3(file_path):
     """
     # Split the file path into root and extension
     root, ext = os.path.splitext(file_path)
-    
+
     # Check if the current extension is .webm
-    if ext.lower() == '.webm':
+    if ext.lower() == ".webm":
         # Change the extension to .mp3
-        return root + '.mp3'
+        return root + ".mp3"
     else:
         # Return the original path or handle as needed
         return file_path
+
 
 def wav_to_midi(audio_file):
     """
@@ -146,16 +161,13 @@ def wav_to_midi(audio_file):
     if is_webm_file(audio_file):
         mp3_output_path = change_extension_to_mp3(audio_file)
         convert_webm_to_mp3(audio_file, mp3_output_path)
-
-
+        audio_file = mp3_output_path
 
     # Convert audio file into wav file
     file_name, wav_file = audio_to_wav(audio_file)
 
-
     # Load audio file using librosa
     audio_data, sample_rate = librosa.load(wav_file)
-
 
     # Set min and max frequencies for pitch detection
     fmin = librosa.note_to_hz("C1")
@@ -183,7 +195,6 @@ def wav_to_midi(audio_file):
         11: "B",
     }
     key_signature = key_map[int(dominant_pitch) % 12]
-
 
     # Obtain BPM
     tempo, beat_frames = librosa.beat.beat_track(y=audio_data, sr=sample_rate)

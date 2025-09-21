@@ -30,6 +30,9 @@ FROM python:3.9-slim
 # Install libsndfile
 RUN apt-get update && apt-get install -y libsndfile1
 
+# Install ffmpeg
+RUN apt-get update && apt-get install -y ffmpeg
+
 # Set the working directory in the container
 WORKDIR /app
 
