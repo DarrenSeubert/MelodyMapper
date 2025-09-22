@@ -1,7 +1,7 @@
 /******************************************************************************
  * Filename: FileUpload.jsx
  * Purpose:  A component that allows the user to upload an audio file.
- * Author:   Victor Nguyen & Don Ma
+ * Author:   Victor Nguyen, Don Ma, & Darren Seubert
  *
  * Description:
  * This file contains the FileUpload component that allows the user to upload an
@@ -23,7 +23,7 @@ import { Button } from "react-bootstrap";
 import "./FileUpload.css";
 import ConvertFileModal from "./ConvertFileModal";
 
-const FileUpload = () => {
+const FileUpload = ({ onConversionSuccess }) => {
   // File to be uploaded
   const [file, setFile] = useState(null);
 
@@ -110,6 +110,7 @@ const FileUpload = () => {
         handleShow={showFileDetailsModal}
         handleClose={handleClose}
         getAbbreviatedFileName={getAbbreviatedFileName}
+        onConversionSuccess={onConversionSuccess}
       />
 
       {/* Upload & Convert Heading */}
