@@ -1,7 +1,7 @@
 ################################################################################
 # Filename: user_model.py
 # Purpose:  Define the User model for representing user data in the database.
-# Author:   Benjamin Goh and Darren Seubert
+# Author:   Benjamin Goh & Darren Seubert
 #
 # Description:
 # This file contains the definition of the User class, which is used as a model

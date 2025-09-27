@@ -1,7 +1,7 @@
 ################################################################################
 # Filename: test_conversion.py
 # Purpose:  Contains pytest test cases for audio conversion functions.
-# Author:   Livia Chandra
+# Author:   Livia Chandra & Darren Seubert
 #
 # Description:
 # This file contains pytest test cases for audio conversion functions,
@@ -16,7 +16,13 @@
 
 import pytest
 import os
-from app.utils.conversion import audio_to_wav, convert_webm_to_mp3, divide_audio_data, wav_to_midi
+from app.utils.conversion import (
+    audio_to_wav,
+    convert_webm_to_mp3,
+    divide_audio_data,
+    wav_to_midi,
+)
+
 
 @pytest.fixture
 def audio_files():
@@ -32,14 +38,14 @@ def audio_files():
         "m4a": "./server/app/utils/audio_sample/sample_m4a.m4a",
         "wav": "./server/app/utils/audio_sample/sample_wav.wav",
         "webm": "./server/app/utils/audio_sample/sample_webm.webm",
-        "flac": "./server/app/utils/audio_sample/sample_flac.flac"
+        "flac": "./server/app/utils/audio_sample/sample_flac.flac",
     }
     return files
 
 
 # def test_audio_input(audio_files):
 #     """
-#     Test audio_to_wav function for converting accetable audio files 
+#     Test audio_to_wav function for converting acceptable audio files
 #     (MP3, M4A, WAV, WEBM) to WAV.
 #     Reject audio files other than these four file formats.
 
