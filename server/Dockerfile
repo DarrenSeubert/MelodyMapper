@@ -2,7 +2,7 @@
 # Filename: Dockerfile
 # Purpose:  File to test whether the backend initialization script is working
 #           as expected
-# Author:   Benjamin Goh
+# Author:   Benjamin Goh & Darren Seubert
 #
 # Description:
 # This Dockerfile is used to build a Docker image for a Python application
@@ -25,7 +25,7 @@
 ###############################################################################
 
 # Use an official Python runtime as a parent image
-FROM python:3.9-slim
+FROM python:3.11.13-slim
 
 # Install libsndfile
 RUN apt-get update && apt-get install -y libsndfile1
