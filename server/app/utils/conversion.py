@@ -1,7 +1,7 @@
 ################################################################################
 # Filename: conversion.py
 # Purpose:  Perform audio processing and conversion tasks to MIDI.
-# Author:   Livia Chandra, Roshni Venkat, and Darren Seubert
+# Author:   Darren Seubert
 #
 # Description:
 # This file contains functions for audio processing tasks, including conversion
@@ -22,21 +22,23 @@
 #
 ###############################################################################
 
+from basic_pitch.inference import predict
 import os
-import pydub
-import librosa
-import numpy as np
-import scipy.signal as signal
-import math
-import mido
-
-midi_folder = "./app/utils/midi_output"
-
 import subprocess
+
+SUPPORTED_EXTENSIONS = {"m4a", "mp3", "wav"}
+MIDI_OUTPUT_DIR = "./app/utils/midi_output"
 
 
 def convert_webm_to_mp3(input_file, output_file):
-    # command to convert the WEBM file to MP3
+    """
+    Converts a WEBM audio file to MP3 format using ffmpeg.
+
+    Args:
+        input_file (str): Path to the input WEBM file.
+        output_file (str): Path to save the converted MP3 file.
+    """
+    # Command to convert the WEBM file to MP3
     command = [
         "ffmpeg",
         "-i",
@@ -50,7 +52,7 @@ def convert_webm_to_mp3(input_file, output_file):
         output_file,
     ]
 
-    # run the command through the subprocess module
+    # Run the command through the subprocess module
     try:
         subprocess.run(command, check=True)
         print("Conversion completed successfully.")
@@ -58,239 +60,86 @@ def convert_webm_to_mp3(input_file, output_file):
         print("An error occurred during conversion.")
 
 
-def audio_to_wav(audio_file):
+def is_webm_file(file_path: str) -> bool:
     """
-    Helper function to convert audio file into wav file for MIDI conversion.
+    Checks if the given file is a WEBM file based on its extension.
 
     Args:
-        audio_file (string): The path to obtain audio file.
+        file_path (str): Path to the file to be checked.
 
     Returns:
-        file_name (string): File name to name converted MIDI file.
-        wav_file (string): The path to obtain audio file with wav extension.
+        bool: True if the file is a WEBM file, False otherwise.
     """
-    # List of accepted audio file type
-    available_extension = ["m4a", "mp3", "wav"]
+    return os.path.splitext(file_path)[1].lower() == ".webm"
 
-    # Get the name and the extension type of the input audio file
-    file_name, extension = os.path.splitext(audio_file)
-    file_name = file_name.split("/")[-1]
 
-    # Check the extension of the input audio file
-    if extension[1:] not in available_extension:
+def replace_extension(file_path: str, new_ext: str) -> str:
+    """
+    Replaces the file extension of the given file path with a new extension.
+
+    Args:
+        file_path (str): Original file path.
+        new_ext (str): New file extension (with or without leading dot).
+
+    Returns:
+        str: File path with the new extension.
+    """
+    root, _ = os.path.splitext(file_path)
+    new_ext = new_ext if new_ext.startswith(".") else f".{new_ext}"
+    return root + new_ext
+
+
+def validate_audio_file(file_path: str) -> str | None:
+    """
+    Validates an audio file for MIDI conversion.
+
+    - Converts WEBM to MP3 if necessary.
+    - Validates supported extensions.
+
+    Args:
+        file_path: Path to the original audio file.
+
+    Returns:
+        Path to the prepared audio file (possibly converted), or None if unsupported.
+    """
+    # Convert WEBM → MP3 if needed
+    if is_webm_file(file_path):
+        mp3_path = replace_extension(file_path, "mp3")
+        convert_webm_to_mp3(file_path, mp3_path)
+        file_path = mp3_path
+
+    # Validate extension after potential conversion
+    _, ext = os.path.splitext(file_path)
+    if ext.lower().lstrip(".") not in SUPPORTED_EXTENSIONS:
+        print(f"Unsupported audio format: {ext}")
         return None
 
-    # Convert input audio file to wav file
-    current_directory = os.getcwd()
-    wav_file_path = os.path.join(current_directory, file_name + ".wav")
-    # wav_file_path = os.path.join(audio_folder, file_name + ".wav")
-    wav_file = pydub.AudioSegment.from_file(audio_file, extension[1:]).export(
-        wav_file_path, format="wav"
-    )
-
-    return file_name, wav_file
+    return file_path
 
 
-def divide_audio_data(audio_data, sample_rate, tempo):
+def convert_to_midi(input_audio_path: str) -> str | None:
     """
-    Helper function to divide array into segments with variable length based on BPM.
+    Convert an audio file to MIDI using Basic Pitch.
 
     Args:
-        audio_data (ndarray): 1D array that contains audio signal information
-        sample_rate (int): Number of samples per second (Hz) used when loading the
-                           audio file.
-        tempo (float64): Estimated tempo of the audio signal in beats per minute (BPM)
+        input_audio_path: Path to input audio file.
 
-    Yields:
-        ndarray: Segments of audio data with variable length based on the BPM.
+    Returns:
+        Path to generated MIDI file, or None if unsupported.
     """
-    try:
-        # Calculate the duration of one beat in seconds
-        beat_duration = 60 / tempo
-
-        # Calculate the desired length of each segment based on the beat duration
-        desired_len = int(sample_rate * beat_duration * 2)
-
-        # Loop through the array and yield segments of the desired length
-        for i in range(0, len(audio_data), desired_len):
-            yield audio_data[i : i + desired_len]
-    except Exception as e:
-        print("An error occurred during audio data division:", e)
+    # Prepare audio file (convert if needed, validate extension)
+    input_audio_path = validate_audio_file(input_audio_path)
+    if not input_audio_path:
         return None
 
+    # Extract base name for MIDI file
+    base_name = os.path.splitext(os.path.basename(input_audio_path))[0]
 
-def is_webm_file(file_path):
-    _, file_extension = os.path.splitext(file_path)
-    return file_extension.lower() == ".webm"
-
-
-def change_extension_to_mp3(file_path):
-    """
-    Change the file extension of a given path from .webm to .mp3.
-
-    Args:
-    file_path (str): The path to the file.
-
-    Returns:
-    str: The modified file path with a .mp3 extension.
-    """
-    # Split the file path into root and extension
-    root, ext = os.path.splitext(file_path)
-
-    # Check if the current extension is .webm
-    if ext.lower() == ".webm":
-        # Change the extension to .mp3
-        return root + ".mp3"
-    else:
-        # Return the original path or handle as needed
-        return file_path
-
-
-def wav_to_midi(audio_file):
-    """
-    Convert audio file to MIDI format.
-
-    Args:
-        audio_file (str): The path to the audio file.
-
-    Returns:
-        str: The path to the generated MIDI file.
-    """
-
-    # Check if it is webm
-    if is_webm_file(audio_file):
-        mp3_output_path = change_extension_to_mp3(audio_file)
-        convert_webm_to_mp3(audio_file, mp3_output_path)
-        audio_file = mp3_output_path
-
-    # Convert audio file into wav file
-    file_name, wav_file = audio_to_wav(audio_file)
-
-    # Load audio file using librosa
-    audio_data, sample_rate = librosa.load(wav_file)
-
-    # Set min and max frequencies for pitch detection
-    fmin = librosa.note_to_hz("C1")
-    fmax = librosa.note_to_hz("C8")
-
-    # Perform pitch detection to identify dominant pitch
-    pitch = librosa.yin(y=audio_data, sr=sample_rate, fmin=fmin, fmax=fmax)
-
-    # Find the most frequent pitch
-    dominant_pitch = np.argmax(pitch)
-
-    # Determine key signature by mapping MIDI note number
-    key_map = {
-        0: "C",
-        1: "C#",
-        2: "D",
-        3: "D#",
-        4: "E",
-        5: "F",
-        6: "F#",
-        7: "G",
-        8: "G#",
-        9: "A",
-        10: "A#",
-        11: "B",
-    }
-    key_signature = key_map[int(dominant_pitch) % 12]
-
-    # Obtain BPM
-    tempo, beat_frames = librosa.beat.beat_track(y=audio_data, sr=sample_rate)
-
-    # Obtain time
-    beat_times = librosa.frames_to_time(beat_frames, sr=sample_rate)
-
-    # Divide audio into segments with variable length based on BPM
-    trimmed_frequency = list(divide_audio_data(audio_data, sample_rate, tempo))
-
-    # STFT Parameters
-    window_size = 512  # Window size
-    hop_length = 128  # Hop length
-
-    # Analyze frequency for each time frame
-    frequency_list = []
-
-    # Compute STFT for each segment
-    for frequency in trimmed_frequency:
-
-        # Adjust nperseg and noverlap based on the length of the segment
-        nperseg = min(len(frequency), window_size)
-        noverlap = nperseg - hop_length
-        _, _, stft = signal.stft(
-            frequency, fs=sample_rate, nperseg=nperseg, noverlap=noverlap
-        )
-
-        # Sum across time axis to get magnitude spectrum
-        magnitude_spectrum = np.abs(stft).mean(axis=1)
-
-        # Convert to frequency domain
-        frequency_bins = np.fft.fftfreq(len(magnitude_spectrum)) * sample_rate
-
-        # Weighted median frequency
-        median_freq_index = np.argmax(
-            np.cumsum(magnitude_spectrum) >= np.sum(magnitude_spectrum) / 2
-        )
-        median_freq = frequency_bins[median_freq_index]
-
-        frequency_list.append(median_freq)
-
-    # Filter out invalid frequencies
-    filtered_frequency_list = [freq for freq in frequency_list if freq > 0]
-
-    # Set the velocity to determine the volume of output midi file
-    velocity = 127
-
-    # Calculate MIDI notes
-    midi_note = [
-        (int(12 * math.log(freq / 440.0) / math.log(2)) + 69)
-        for freq in filtered_frequency_list
-    ]
-
-    # Create a new MIDI file and track
-    midi = mido.MidiFile()
-    track = mido.MidiTrack()
-    midi.tracks.append(track)
-
-    # Set the key signature meta message
-    key_sig_message = mido.MetaMessage("key_signature", key=key_signature, time=0)
-    track.append(key_sig_message)
-
-    # Create and append the tempo meta message in microseconds
-    tempo_microseconds = int(60 * 10**6 / tempo)
-    tempo_message = mido.MetaMessage("set_tempo", tempo=tempo_microseconds)
-    track.append(tempo_message)
-
-    # Calculate MIDI time based on tempo
-    midi_time = [
-        (beat_times[i] - beat_times[i - 1]) * 60 / tempo
-        for i in range(1, len(beat_times))
-    ]
-
-    # Reverse the time list
-    midi_new_time = list(reversed(midi_time))
-
-    # Create MIDI messages
-    for note, time in zip(midi_note, midi_new_time):
-
-        # Convert time from seconds to ticks
-        ticks_per_beat = midi.ticks_per_beat
-        time_ticks = int(round(time * sample_rate / (60 * tempo / ticks_per_beat)))
-
-        # Write MIDI message and append to the MIDI track
-        if note > 0:
-            message_on = mido.Message(
-                "note_on", note=note, velocity=velocity, time=time_ticks
-            )
-            message_off = mido.Message(
-                "note_off", note=note, velocity=velocity, time=time_ticks
-            )
-            track.append(message_on)
-            track.append(message_off)
+    # Run pitch prediction
+    _, midi_data, _ = predict(input_audio_path)
 
     # Save MIDI file
-    midi_file_name = os.path.join(midi_folder, file_name + ".mid")
-    midi.save(midi_file_name)
+    midi_path = os.path.join(MIDI_OUTPUT_DIR, base_name + ".mid")
+    midi_data.write(midi_path)
 
-    return midi_file_name
+    return midi_path
