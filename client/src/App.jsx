@@ -1,7 +1,7 @@
 /******************************************************************************
  * Filename: App.jsx
  * Purpose:  Main application file for the Melody Mapper application.
- * Author:   Victor Nguyen & Don Ma
+ * Author:   Victor Nguyen, Don Ma, & Darren Seubert
  *
  * Description:
  * This file contains the main application component that renders the entire
@@ -17,7 +17,7 @@
  *
  ******************************************************************************/
 
-import React from "react";
+import React, { useState } from "react";
 import "./App.css";
 import SecurityStatement from "./components/security_statement/SecurityStatement";
 import AppLogo from "./components/logo/AppLogo";
@@ -25,14 +25,21 @@ import RecordAudio from "./components/record/RecordAudio";
 import FileUpload from "./components/upload/FileUpload";
 import ConversionHistory from "./components/conversion_history/ConversionHistory";
 
+
 function App() {
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const handleConversionSuccess = () => {
+    setRefreshKey((prev) => prev + 1);
+  };
+
   return (
     <div className="App" data-testid="App">
       <SecurityStatement />
       <AppLogo />
       <RecordAudio />
-      <FileUpload />
-      <ConversionHistory />
+      <FileUpload onConversionSuccess={handleConversionSuccess} />
+      <ConversionHistory refreshKey={refreshKey} />
     </div>
   );
 }

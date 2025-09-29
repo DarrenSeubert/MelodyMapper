@@ -1,7 +1,7 @@
 /******************************************************************************
  * title: ConversionHistory.jsx
  * Purpose:  A component that displays the user's file conversion history.
- * name:   Victor Nguyen & Don Ma
+ * name:   Victor Nguyen, Don Ma, & Darren Seubert
  *
  * Description:
  * This file contains the ConversionHistory component that displays the user's
@@ -112,7 +112,7 @@ const mockConversionHistoryData = [
  *
  * @returns {JSX.Element} ConversionHistory component.
  */
-const ConversionHistory = ({ isDebug = false }) => {
+const ConversionHistory = ({ isDebug = false, refreshKey }) => {
   const [convertedFiles, setConvertedFiles] = useState([]);
   const [currentPage, setCurrentPage] = useState(0);
   const itemsPerPage = 10;
@@ -141,7 +141,7 @@ const ConversionHistory = ({ isDebug = false }) => {
           console.error("Error:", error);
         });
     }
-  }, []);
+  }, [isDebug, apiUrl, refreshKey]);
 
   const handleGetData = async (midi_id) => {
     const apiUrl = process.env.REACT_APP_API_URL;
@@ -163,7 +163,6 @@ const ConversionHistory = ({ isDebug = false }) => {
    * @param {string} title - The name of the file to download.
    */
   const handleDownloadMIDI = async (title, midi_id) => {
-    window.alert("Download initiated for " + title);
     const data = await handleGetData(midi_id);
     const midiData = data.midi_data; // base64 encoded MIDI data
     const filename = data.title + ".mid"; // Generate a file name
@@ -178,7 +177,6 @@ const ConversionHistory = ({ isDebug = false }) => {
    * @param {string} title - The name of the file to download.
    */
   const handleDownloadXML = async (title, midi_id) => {
-    window.alert("Download initiated for " + title);
     const data = await handleGetData(midi_id);
     const xmlData = data.xml_data;
     const filename = data.title + ".musicxml"; // Generate a file name

@@ -2,7 +2,7 @@
 # Filename: Dockerfile
 # Purpose:  File to test whether the database initialization script is working
 #           as expected
-# Author:   Benjamin Goh
+# Author:   Benjamin Goh & Darren Seubert
 #
 # Description:
 # This Dockerfile is used to build a Docker image for a Node.js application
@@ -35,6 +35,9 @@ COPY package*.json ./
 
 # Install project dependencies
 RUN npm install
+
+# Add the missing Babel plugin explicitly
+RUN npm install --save-dev @babel/plugin-proposal-private-property-in-object
 
 # Bundle app source by copying all files
 COPY . .

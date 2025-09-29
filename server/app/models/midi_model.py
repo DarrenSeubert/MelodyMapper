@@ -1,7 +1,7 @@
 ################################################################################
 # Filename: midi_model.py
 # Purpose:  Define the Midi model for representing MIDI file data in the database.
-# Author:   Benjamin Goh and Darren Seubert
+# Author:   Benjamin Goh & Darren Seubert
 #
 # Description:
 # This file contains the definition of the Midi class, which is used as a model

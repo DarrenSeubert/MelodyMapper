@@ -1,7 +1,7 @@
 ################################################################################
 # Filename: test_db_schema.py
-# Purpose:  file to test whether the database is created and initilized correctly
-# Author:   Roshni Venkat
+# Purpose:  file to test whether the database is created and initialized correctly
+# Author:   Roshni Venkat & Darren Seubert
 #
 # Description:
 # This file contains the tests for checking whether the database is created and
@@ -23,6 +23,7 @@ from app.database import db
 from app.test_config import TestingConfig
 from app.models.user_model import User
 from app.models.midi_model import MIDI
+
 
 @pytest.fixture
 def app():
@@ -49,12 +50,12 @@ def test_users_setup(app):
 
     Args:
         app (Flask): The Flask application instance.
-    
+
     Returns:
         None
     """
     with app.app_context():
-        table_exists = db.engine.dialect.has_table(db.engine.connect(), 'users')
+        table_exists = db.engine.dialect.has_table(db.engine.connect(), "users")
         assert table_exists
 
 
@@ -69,7 +70,7 @@ def test_midis_setup(app):
         None
     """
     with app.app_context():
-        table_exists = db.engine.dialect.has_table(db.engine.connect(), 'midis')
+        table_exists = db.engine.dialect.has_table(db.engine.connect(), "midis")
         assert table_exists
 
 
@@ -84,7 +85,7 @@ def test_users_schema(app):
         None
     """
     with app.app_context():
-        expected_columns = ['user_id', 'name', 'email']
+        expected_columns = ["user_id", "name", "email"]
         user_columns = []
         for col in db.inspect(User.__table__).columns:
             user_columns.append(col.name)
@@ -97,12 +98,12 @@ def test_midis_schema(app):
 
     Args:
         app (Flask): The Flask application instance.
-    
+
     Returns:
         None
     """
     with app.app_context():
-        expected_columns = ['midi_id', 'user_id', 'title', 'date', 'midi_data']
+        expected_columns = ["midi_id", "user_id", "title", "date", "midi_data"]
         midi_columns = []
         for col in db.inspect(MIDI.__table__).columns:
             midi_columns.append(col.name)

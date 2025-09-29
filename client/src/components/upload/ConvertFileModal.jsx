@@ -2,7 +2,7 @@
  * Filename: ConvertFileModal.jsx
  * Purpose:  A modal that allows the user to input the required details for the
  * file conversion & convert the file.
- * Author:   Victor Nguyen & Benjamin Goh
+ * Author:   Victor Nguyen, Benjamin Goh, & Darren Seubert
  *
  * Description:
  * This file contains the ConvertFileModal component that allows the user to
@@ -46,7 +46,7 @@ export default function ConvertFileModal(props) {
 
     const apiUrl = process.env.REACT_APP_API_URL;
 
-    // Create a new FormData object with the selecteed file
+    // Create a new FormData object with the selected file
     const formData = new FormData();
     formData.append("name", name);
     formData.append("email", email);
@@ -65,6 +65,7 @@ export default function ConvertFileModal(props) {
         if (response.status === expectedStatus) {
           setConversionComplete(true);
           setIsConverting(false);
+          if (props.onConversionSuccess) props.onConversionSuccess();
         } else {
           throw new Error(
             `Expected status ${expectedStatus} but received ${response.status}`,

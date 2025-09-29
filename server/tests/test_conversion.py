@@ -1,12 +1,13 @@
 ################################################################################
 # Filename: test_conversion.py
 # Purpose:  Contains pytest test cases for audio conversion functions.
-# Author:   Livia Chandra
+# Author:   Darren Seubert
 #
 # Description:
 # This file contains pytest test cases for audio conversion functions,
-# including tests for converting audio files to WAV format, dividing audio
-# data into segments, and converting WAV files to MIDI format.
+# including tests for file format validation, WEBM to MP3 conversion,
+# and audio to MIDI conversion. It uses fixtures to provide sample audio files
+# for testing.
 #
 # Usage (Optional):
 #
@@ -14,9 +15,10 @@
 #
 ###############################################################################
 
-import pytest
+import app.utils.conversion as conversion
 import os
-from app.utils.conversion import audio_to_wav, convert_webm_to_mp3, divide_audio_data, wav_to_midi
+import pytest
+
 
 @pytest.fixture
 def audio_files():
@@ -26,78 +28,144 @@ def audio_files():
     Returns:
         dict: Dictionary containing sample audio file paths.
     """
-
-    files = {
+    return {
         "mp3": "./server/app/utils/audio_sample/sample_mp3.mp3",
         "m4a": "./server/app/utils/audio_sample/sample_m4a.m4a",
         "wav": "./server/app/utils/audio_sample/sample_wav.wav",
         "webm": "./server/app/utils/audio_sample/sample_webm.webm",
-        "flac": "./server/app/utils/audio_sample/sample_flac.flac"
+        "flac": "./server/app/utils/audio_sample/sample_flac.flac",
     }
-    return files
 
 
-# def test_audio_input(audio_files):
-#     """
-#     Test audio_to_wav function for converting accetable audio files 
-#     (MP3, M4A, WAV, WEBM) to WAV.
-#     Reject audio files other than these four file formats.
-
-#     Args:
-#         audio_files (dict): Dictionary containing sample audio file paths.
-#     """
-
-#     # Valid test case 1 - MP3
-#     mp3_output = audio_to_wav(audio_files["mp3"])
-#     assert mp3_output is not None
-
-#     # Valid test case 2 - M4A
-#     m4a_output = audio_to_wav(audio_files["m4a"])
-#     assert m4a_output is not None
-
-#     # Valid test case 3 - WAV
-#     wav_output = audio_to_wav(audio_files["wav"])
-#     assert wav_output is not None
-
-#     # Valid test case 4 - WEBM
-#     webm_output = audio_to_wav(audio_files["webm"])
-#     assert webm_output is not None
-
-#     # Invalid test case - FLAC
-#     flac_output = audio_to_wav(audio_files["flac"])
-#     assert flac_output is None
-
-
-def test_divide_audio_data():
+def test_is_webm_file(audio_files):
     """
-    Test divide_audio_data helper function for segmenting audio data.
+    Test the is_webm_file function.
 
-    This function tests if the audio data is correctly divided into segments
-    based on the provided sample rate and tempo.
+    Args:
+        audio_files (dict): Fixture providing sample audio file paths.
     """
-
-    # Audio data, sample rate and bpm setup
-    sample_rate = 44100
-    audio_data = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-    tempo = 120
-
-    # Expected output
-    expected_num_segments = len(audio_data) // (sample_rate * 60 / tempo * 2) + 1
-
-    segments = list(divide_audio_data(audio_data, sample_rate, tempo))
-    assert len(segments) == expected_num_segments
+    assert conversion.is_webm_file(audio_files["webm"])
+    assert not conversion.is_webm_file(audio_files["mp3"])
 
 
-# def test_midi_conversion(audio_files):
-#     """
-#     Test wav_to_midi function for converting WAV file to MIDI file.
+def test_replace_extension():
+    """
+    Test the replace_extension function.
+    """
+    assert conversion.replace_extension("folder/file.webm", "mp3") == "folder/file.mp3"
+    assert conversion.replace_extension("folder/file.webm", ".m4a") == "folder/file.m4a"
 
-#     Args:
-#         audio_files (dict): Dictionary containing sample audio file paths.
-#     """
 
-#     curr_dirr = os.getcwd()
-#     # Pass in WAV file for MIDI conversion
-#     audio_wav = audio_files["wav"]
-#     midi_file = wav_to_midi(curr_dirr)
-#     assert midi_file is not None
+def test_validate_audio_file_supported_formats(audio_files):
+    """
+    Test the validate_audio_file function for supported formats.
+
+    Args:
+        audio_files (dict): Fixture providing sample audio file paths.
+    """
+    for ext in ["mp3", "m4a", "wav"]:
+        assert conversion.validate_audio_file(audio_files[ext]) == audio_files[ext]
+
+
+def test_validate_audio_file_unsupported(audio_files, capsys):
+    """
+    Test the validate_audio_file function for unsupported formats.
+
+    Args:
+        audio_files (dict): Fixture providing sample audio file paths.
+        capsys: Pytest fixture to capture stdout/stderr.
+    """
+    result = conversion.validate_audio_file(audio_files["flac"])
+    out = capsys.readouterr().out
+    assert result is None
+    assert "Unsupported audio format" in out
+
+
+def test_validate_audio_file_webm_conversion_success(audio_files):
+    """
+    Test the validate_audio_file function for WEBM conversion success.
+
+    Args:
+        audio_files (dict): Fixture providing sample audio file paths.
+    """
+    # Save original function to restore later
+    original = conversion.convert_webm_to_mp3
+    called = {}
+
+    def fake_convert(src, dst):
+        called["args"] = (src, dst)
+
+    conversion.convert_webm_to_mp3 = fake_convert
+    try:
+        expected_mp3_path = conversion.replace_extension(audio_files["webm"], "mp3")
+        result = conversion.validate_audio_file(audio_files["webm"])
+        assert result == expected_mp3_path
+        assert called["args"] == (audio_files["webm"], expected_mp3_path)
+    finally:
+        conversion.convert_webm_to_mp3 = original
+
+
+def test_convert_to_midi_success(audio_files):
+    """
+    Test the convert_to_midi function for successful conversion.
+
+    Args:
+        audio_files (dict): Fixture providing sample audio file paths.
+    """
+    # Save originals
+    orig_validate = conversion.validate_audio_file
+    orig_predict = conversion.predict
+    recorded = {}
+
+    def fake_validate(path):
+        return audio_files["mp3"]
+
+    class FakeMidi:
+        def write(self, midi_path):
+            recorded["midi_path"] = midi_path
+
+    def fake_predict(path):
+        return None, FakeMidi(), None
+
+    conversion.validate_audio_file = fake_validate
+    conversion.predict = fake_predict
+
+    try:
+        os.makedirs(conversion.MIDI_OUTPUT_DIR, exist_ok=True)
+        midi_path = conversion.convert_to_midi(audio_files["mp3"])
+        expected = os.path.join(conversion.MIDI_OUTPUT_DIR, "sample_mp3.mid")
+        assert midi_path == expected
+        assert recorded["midi_path"] == expected
+    finally:
+        conversion.validate_audio_file = orig_validate
+        conversion.predict = orig_predict
+
+
+def test_convert_to_midi_invalid_file(audio_files):
+    """
+    Test the convert_to_midi function with an invalid audio file.
+
+    Args:
+        audio_files (dict): Fixture providing sample audio file paths.
+    """
+    orig_validate = conversion.validate_audio_file
+    orig_predict = conversion.predict
+    called = {}
+
+    def fake_validate(path):
+        return None
+
+    def fake_predict(path):
+        called["predict"] = True
+        return None, None, None
+
+    conversion.validate_audio_file = fake_validate
+    conversion.predict = fake_predict
+
+    try:
+        result = conversion.convert_to_midi(audio_files["flac"])
+        assert result is None
+        assert "predict" not in called  # Predict should not have been called
+    finally:
+        conversion.validate_audio_file = orig_validate
+        conversion.predict = orig_predict
