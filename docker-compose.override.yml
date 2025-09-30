@@ -1,7 +1,7 @@
 ################################################################################
 # Filename: docker-compose.override.yml
 # Purpose : Customize Docker Compose behavior for local development environments
-# Author  : Benjamin Goh
+# Author  : Benjamin Goh & Darren Seubert
 
 # Description:
 # This Docker Compose override file is designed to enhance or modify the configuration
@@ -33,29 +33,39 @@
 
 ################################################################################
 
-version: "3.8"
 services:
+  nginx:
+    ports:
+      - "8080:80"
+
   frontend:
+    build:
+      args:
+        ENV_FILE: .env
     volumes:
       - ./client:/app
       - node_modules:/app/node_modules
     environment:
       - NODE_ENV=development
-      - REACT_APP_API_URL=http://localhost:8080
 
   backend:
-    # volumes:
-    #   - ./server:/app
+    build:
+      args:
+        ENV_FILE: .env
     environment:
-      - APP_ENV=development
-      - DATABASE_URL=mysql+mysqlconnector://root:my_root_password@db/mp_database
+      - DATABASE_URL=${DATABASE_URL_DEV}
+
+  db:
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD_DEV}
+      MYSQL_DATABASE: ${MYSQL_DATABASE_DEV}
 
   dbPhpMyAdmin:
     image: phpmyadmin/phpmyadmin:latest
     environment:
       PMA_HOST: db
       PMA_USER: root
-      PMA_PASSWORD: my_root_password
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD_DEV}
     ports:
       - "8765:80"
 

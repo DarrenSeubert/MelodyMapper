@@ -1,7 +1,7 @@
 ################################################################################
 # Filename: docker-compose.prod.yml
 # Purpose : Define and manage the production environment for the application
-# Author  : Benjamin Goh
+# Author  : Benjamin Goh & Darren Seubert
 
 # Description:
 # This Docker Compose file orchestrates the production environment for the application,
@@ -31,40 +31,40 @@
 
 ################################################################################
 
-version: "3.8"
 services:
   nginx:
     build: ./nginx
     ports:
       - "80:80"
-    depends_on:
-      - frontend
-      - backend
-      - db
 
   frontend:
-    build: ./client
+    build: 
+      args:
+        ENV_FILE: .env
     depends_on:
       - backend
     environment:
       - NODE_ENV=production
-      - REACT_APP_API_URL=http://cs506-team-05.cs.wisc.edu
+    ports:
+      - "3000:3000"
+    command: ["serve", "-s", "build", "-l", "3000"]
 
   backend:
-    build: ./server
+    build:
+      args:
+        ENV_FILE: .env
     depends_on:
       - db
     environment:
-      - APP_ENV=production
-      - DATABASE_URL=mysql+mysqlconnector://root:my_root_password@db/mp_database
+      - DATABASE_URL=${DATABASE_URL_PROD}
+    ports:
+      - "5000:5000"
+    command: ["gunicorn", "-w", "4", "-b", "0.0.0.0:5000", "run:app"]
 
   db:
-    build: ./database
     environment:
-      MYSQL_ROOT_PASSWORD: my_root_password
-      MYSQL_DATABASE: mp_database
-    volumes:
-      - db_data:/var/lib/mysql
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD_PROD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE_PROD}
     restart: unless-stopped
 
 volumes:

@@ -1,7 +1,7 @@
 ################################################################################
 # Filename: docker-compose.yml
 # Purpose : Define the orchestration of services for the web application
-# Author  : Benjamin Goh
+# Author  : Benjamin Goh & Darren Seubert
 
 # Description:
 # This Docker Compose file orchestrates a web application setup that includes
@@ -30,29 +30,29 @@
 
 ################################################################################
 
-version: "3.8"
-
 services:
   nginx:
     build: ./nginx
-    ports:
-      - "8080:80"
     depends_on:
       - frontend
       - backend
       - db
 
   frontend:
-    build: ./client
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    environment:
+      - REACT_APP_API_URL_DEV=${REACT_APP_API_URL_DEV}
+      - REACT_APP_API_URL_PROD=${REACT_APP_API_URL_PROD}
 
   backend:
-    build: ./server
+    build:
+      context: .
+      dockerfile: server/Dockerfile
 
   db:
     build: ./database
-    environment:
-      MYSQL_ROOT_PASSWORD: my_root_password
-      MYSQL_DATABASE: mp_database
     volumes:
       - db_data:/var/lib/mysql
 

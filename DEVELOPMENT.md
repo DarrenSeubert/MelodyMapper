@@ -4,8 +4,8 @@ This guide outlines the process for configuring and launching the development en
 
 ## Prerequisites
 
-Docker installed on your machine.
-Docker Compose installed on your machine.
+* Docker and Docker Compose installed on your machine or server.
+* The Docker daemon is running.
 
 ## Steps to Run
 
@@ -14,7 +14,7 @@ Docker Compose installed on your machine.
 If you haven't already, clone the project repository to your local machine.
 
 ```bash
-git clone https://git.doit.wisc.edu/cdis/cs/courses/cs506/sp2024/team/mondaywednesdaylecture/T_05/MelodyMapper.
+git clone https://github.com/DarrenSeubert/MelodyMapper.git
 cd MelodyMapper
 ```
 
