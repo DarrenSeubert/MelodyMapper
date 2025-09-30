@@ -4,9 +4,15 @@
 
 ### Project Abstract
 
-Melody Mapper is an application designed to convert voiced melodies into MIDI format. Users can input melodies through voice, and the application will transform them into MIDI representation, allowing for storage and playback. This functionality enables users to easily capture and manipulate melodies for various purposes, such as music composition, analysis, or playback. 
+Melody Mapper is an application designed to convert voiced melodies into MIDI format. Users can input melodies through voice, and the application will transform them into MIDI representation, allowing for storage and playback. This functionality enables users to easily capture and manipulate melodies for various purposes, such as music composition, analysis, or playback.
 
 This project was worked on at The University of Wisconsin-Madison in Spring of 2024 as a class project for Computer Sciences 506: Software Engineering. The original authors of this project are: Darren Seubert, Ben Goh, Victor Nguyen, Livia Chandra, Roshni Venkat, and Don Ma. This repository is an extension of that project with the goal of improving conversion accuracy and cleaning up some features within the project.
+
+### Code Coverage
+
+Frontend: [![Frontend Coverage](https://codecov.io/gh/DarrenSeubert/MelodyMapper/branch/main/graph/badge.svg?flag=frontend "Frontend Coverage")](https://codecov.io/gh/DarrenSeubert/MelodyMapper)
+
+Backend: [![Backend Coverage](https://codecov.io/gh/DarrenSeubert/MelodyMapper/branch/main/graph/badge.svg?flag=backend "Backend Coverage")](https://codecov.io/gh/DarrenSeubert/MelodyMapper)
 
 ### Customer
 

@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  unit_test_frontend:
+    name: Frontend Unit Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: client
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install --save-dev @babel/plugin-proposal-private-property-in-object
+
+      - name: Run frontend tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload frontend coverage to Codecov
+        if: github.ref == 'refs/heads/main' && github.server_url != 'http://localhost'
+        uses: codecov/codecov-action@v4
+        with:
+          files: client/coverage/clover.xml
+          flags: frontend
+          fail_ci_if_error: true
+
+  unit_test_backend:
+    name: Backend Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install backend dependencies
+        run: pip install -r server/requirements.txt
+
+      - name: Run backend tests with coverage
+        run: |
+          coverage run -m pytest
+          coverage report
+          coverage xml -o coverage.xml
+
+      - name: Upload backend coverage to Codecov
+        if: github.ref == 'refs/heads/main' && github.server_url != 'http://localhost'
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          flags: backend
+          fail_ci_if_error: true
