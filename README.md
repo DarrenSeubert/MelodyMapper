@@ -10,7 +10,7 @@ This project was worked on at The University of Wisconsin-Madison in Spring of 2
 
 ### Demo
 
-*Insert GitHub link here*
+https://github.com/user-attachments/assets/af147542-96c4-4dc3-946c-9ba62df33a6f
 
 ### Code Coverage
 
