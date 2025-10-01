@@ -1,43 +1,59 @@
 name: Create Release
 
 on:
+  workflow_dispatch:
   push:
     tags:
-      - 'v*.*.*'
-    branches:
-      - main
+      - 'v[0-9]+.[0-9]+.[0-9]+'
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch full history
+
+      - name: Check if tag commit is on main
+        id: tag_on_main
+        run: |
+          TAG_COMMIT=$(git rev-parse ${{ github.ref_name }})
+          git fetch origin main
+          if git merge-base --is-ancestor $TAG_COMMIT origin/main; then
+            echo "Tag commit is on main."
+            echo "on_main=true" >> $GITHUB_OUTPUT
+          else
+            echo "Tag commit is NOT on main."
+            echo "on_main=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Generate changelog
         id: changelog
+        if: steps.tag_on_main.outputs.on_main == 'true'
         run: |
           # Get the previous tag (if any)
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
           if [ -z "$PREV_TAG" ]; then
-            echo "No previous tag found. Showing all commits."
-            git log --pretty=format:'- %h %s' > changes.txt
+            echo "No previous tag found. Showing all commits on main."
+            git log origin/main --pretty=format:'- %h %s' > changes.txt
           else
             echo "Previous tag: $PREV_TAG"
             git log $PREV_TAG..HEAD --pretty=format:'- %h %s' > changes.txt
           fi
-          echo 'changelog<<EOF' >> $GITHUB_OUTPUT
-          cat changes.txt >> $GITHUB_OUTPUT
-          echo 'EOF' >> $GITHUB_OUTPUT
+          changelog="$(cat changes.txt)"
+          echo "changelog=${changelog}" >> $GITHUB_OUTPUT
 
       - name: Create GitHub Release
+        if: steps.tag_on_main.outputs.on_main == 'true'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: ${{ github.ref_name }}
           body: |
-            # What's Changed
-            
+            ## What's Changed
+
             ${{ steps.changelog.outputs.changelog }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
