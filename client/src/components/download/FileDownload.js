@@ -1,7 +1,7 @@
 /******************************************************************************
  * Filename: FileDownload.js
  * Purpose:  Provides a button component for downloading MIDI files.
- * Author:   Benjamin Goh
+ * Author:   Benjamin Goh & Darren Seubert
  *
  * Description:
  * This React component renders a button that, when clicked, triggers the download of a
@@ -37,13 +37,14 @@
  *   where file download functionality is required.
  ******************************************************************************/
 
+import { getApiUrl } from "../../utils/getApiUrl";
 import downloadMidi from "../../utils/downloadMidi";
 
 const FileDownload = ({ data }) => {
   // Data is expecting to be a JSON and have midi_id field
 
   const handleClick = () => {
-    const apiUrl = process.env.REACT_APP_API_URL;
+    const apiUrl = getApiUrl();
 
     fetch(`${apiUrl}/api/v1/midis/${data.midi_id}`)
       .then((response) => response.json())

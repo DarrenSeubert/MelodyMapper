@@ -14,11 +14,11 @@
  *
  ******************************************************************************/
 
-import React from "react";
 import { useState } from "react";
 import { Button, Form, Modal, Spinner } from "react-bootstrap";
 import downloadMidi from "../../utils/downloadMidi";
 import downloadXml from "../../utils/downloadXml";
+import { getApiUrl } from "../../utils/getApiUrl";
 
 export default function ConvertFileModal(props) {
   // Whether a file is in the process of being converted
@@ -44,7 +44,7 @@ export default function ConvertFileModal(props) {
   const handleConvert = () => {
     setIsConverting(true);
 
-    const apiUrl = process.env.REACT_APP_API_URL;
+    const apiUrl = getApiUrl();
 
     // Create a new FormData object with the selected file
     const formData = new FormData();

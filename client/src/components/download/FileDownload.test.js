@@ -1,7 +1,7 @@
 /******************************************************************************
  * Filename: FileDownload.test.js
  * Purpose:  Tests the FileDownload component.
- * Author:   Victor Nguyen
+ * Author:   Victor Nguyen & Darren Seubert
  *
  * Description:
  * This file contains tests for the FileDownload component. The tests ensure that
@@ -14,16 +14,16 @@
  *
  ******************************************************************************/
 
-import React from "react";
 import { render, fireEvent, screen, waitFor } from "@testing-library/react";
 import FileDownload from "./FileDownload";
+import { getApiUrl } from "../../utils/getApiUrl";
 
 jest.mock("../../utils/downloadMidi", () => jest.fn());
 
 describe("FileDownload", () => {
   it("should call downloadMidi function on button click", () => {
     const data = { midi_id: "123", title: "test" };
-    const apiUrl = process.env.REACT_APP_API_URL;
+    const apiUrl = getApiUrl();
     const midiData = "base64 encoded MIDI data";
 
     global.fetch = jest.fn().mockResolvedValueOnce({

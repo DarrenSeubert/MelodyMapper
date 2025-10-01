@@ -19,9 +19,10 @@
  *
  ******************************************************************************/
 
-import React, { useEffect, useState } from "react";
-import "./ConversionHistory.css";
+import { useEffect, useState } from "react";
 import ReactPaginate from "react-paginate";
+import "./ConversionHistory.css";
+import { getApiUrl } from "../../utils/getApiUrl";
 import downloadMidi from "../../utils/downloadMidi";
 import downloadXml from "../../utils/downloadXml";
 
@@ -118,7 +119,7 @@ const ConversionHistory = ({ isDebug = false, refreshKey }) => {
   const itemsPerPage = 10;
   const [sortingCriteria, setSortingCriteria] = useState("title"); // default is title
   const [isAscending, setIsAscending] = useState(true);
-  const apiUrl = process.env.REACT_APP_API_URL;
+  const apiUrl = getApiUrl();
   const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
@@ -144,7 +145,7 @@ const ConversionHistory = ({ isDebug = false, refreshKey }) => {
   }, [isDebug, apiUrl, refreshKey]);
 
   const handleGetData = async (midi_id) => {
-    const apiUrl = process.env.REACT_APP_API_URL;
+    const apiUrl = getApiUrl();
 
     try {
       const response = await fetch(`${apiUrl}/api/v1/midis/${midi_id}`);

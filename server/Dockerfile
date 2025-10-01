@@ -1,7 +1,6 @@
 ################################################################################
 # Filename: Dockerfile
-# Purpose:  File to test whether the backend initialization script is working
-#           as expected
+# Purpose:  Build and run the server-side Flask application
 # Author:   Benjamin Goh & Darren Seubert
 #
 # Description:
@@ -37,17 +36,14 @@ RUN apt-get update && apt-get install -y ffmpeg
 WORKDIR /app
 
 # Install any needed packages specified in requirements.txt
-COPY requirements.txt ./
+COPY server/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the current directory contents into the container at /app
-COPY . /app
+COPY server/. ./
 
 # Make port 5000 available to the world outside this container
 EXPOSE 5000
-
-# Define environment variable
-ENV NAME World
 
 # Run app.py when the container launches
 CMD ["python", "run.py"]

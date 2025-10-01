@@ -1,6 +1,6 @@
 ################################################################################
 # Filename: Dockerfile
-# Purpose:  File to test whether the database initialization script is working
+# Purpose:  Build and run the client-side React application
 #           as expected
 # Author:   Benjamin Goh & Darren Seubert
 #
@@ -31,16 +31,20 @@ FROM node:20
 WORKDIR /app
 
 # Copy the package.json and package-lock.json (if available)
-COPY package*.json ./
+COPY client/package*.json ./
 
 # Install project dependencies
 RUN npm install
 
-# Add the missing Babel plugin explicitly
-RUN npm install --save-dev @babel/plugin-proposal-private-property-in-object
+# Install serve to run the production build
+RUN npm install -g serve
 
 # Bundle app source by copying all files
-COPY . .
+COPY client/. ./
+
+# Copy env file passed by build arg
+ARG ENV_FILE
+COPY ${ENV_FILE} .env
 
 # Build the app for production
 RUN npm run build
